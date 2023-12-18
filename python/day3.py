@@ -105,13 +105,13 @@ class GridParser(BaseModel):
 
         for x, y in self.asterisk_indices:
             # add a counter. We only coordinates that have atleast 2 digits
-            counter = 0 # TODO COUNT UP THE NUMBERS NEXT TO THE ASTERISK AND COLLECT THOSE.
-            if self.has_adjecent_symbol(x, y, self.candidate_numbers):
+            if self.has_adjecent_symbol(x, y, self.candidate_numbers) >= 2:
                 candidate_digits.append((x, y))
-
+            else:
+                continue
         return candidate_digits
 
-    def has_adjecent_symbol(self, x: int, y: int, search_list: list[str], return_location:bool = False) -> bool:
+    def has_adjecent_symbol(self, x: int, y: int, search_list: list[str]) -> bool:
         """Finds whether a given x, y coordinate has an adjecent symbol
         either vertically, horizontally or diagonally.
 
@@ -122,22 +122,49 @@ class GridParser(BaseModel):
         Returns:
             bool: True if it has an adjecent symbol, False otherwise.
         """
-
+        counter = 0
         # Check vertically
-        if self.check_vertical(x, y, search_list):
-            return True
+        if self.check_vertical(x, y, search_list, False):
+            counter += 1
 
         # Check horizontally
-        if self.check_horizontal(x, y, search_list):
-            return True
+        if self.check_horizontal(x, y, search_list, False):
+            counter += 1
 
         # Check diagonally
-        if self.check_diagonal(x, y, search_list):
-            return True
+        if self.check_diagonal(x, y, search_list, False):
+            counter += 1
 
-        return False
+        return counter
 
-    def check_vertical(self, x: int, y: int, search_list: list[str]) -> bool:
+    def return_adjacent_symbol_numbers(
+        self, x: int, y: int, search_list: list[str]
+    ) -> list[tuple[int, int]]:
+        """Finds whether a given x, y coordinate has an adjecent symbol
+        either vertically, horizontally or diagonally.
+
+        Args:
+            x (int): The x coordinate.
+            y (int): The y coordinate.
+
+        Returns:
+            bool: True if it has an adjecent symbol, False otherwise.
+        """
+        result = []
+        # Check vertically
+        result.append(self.check_vertical(x, y, search_list, True))
+
+        # Check horizontally
+        result.append(self.check_horizontal(x, y, search_list, True))
+
+        # Check diagonally
+        result.append(self.check_diagonal(x, y, search_list, True))
+
+        return result
+
+    def check_vertical(
+        self, x: int, y: int, search_list: list[str], return_location: bool
+    ) -> bool | tuple[int, int]:
         """Checks whether a given x, y coordinate has an adjecent symbol vertically.
 
         Args:
@@ -147,19 +174,21 @@ class GridParser(BaseModel):
         Returns:
             bool: True if it has an adjecent symbol, False otherwise.
         """
-
+        locs = []
         # Check vertically
         if x + 1 < len(self.grid):
             if self.grid[x + 1][y] in search_list:
-                return True
+                return True if not return_location else locs.append((x + 1, y))
 
         if x - 1 >= 0:
             if self.grid[x - 1][y] in search_list:
-                return True
+                return True if not return_location else locs.append((x - 1, y))
 
-        return False
+        return False if not return_location else locs
 
-    def check_horizontal(self, x: int, y: int, search_list: list[str]) -> bool:
+    def check_horizontal(
+        self, x: int, y: int, search_list: list[str], return_location: bool
+    ) -> bool | tuple[int, int]:
         """Checks whether a given x, y coordinate has an adjecent symbol horizontally.
 
         Args:
@@ -181,7 +210,9 @@ class GridParser(BaseModel):
 
         return False
 
-    def check_diagonal(self, x: int, y: int, search_list: list[str]) -> bool:
+    def check_diagonal(
+        self, x: int, y: int, search_list: list[str], return_location: bool
+    ) -> bool | tuple[int, int]:
         """Checks whether a given x, y coordinate has an adjecent symbol diagonally.
 
         Args:
@@ -235,11 +266,18 @@ class GridParser(BaseModel):
     def gears(self) -> list[int]:
         """Returns the digits neighbouring an asterisk from the grid."""
 
-        candidates = self.find_symbol_adjacent_digit_in_grid()
+        candidates = self.find_numbers_adjacent_to_symbol()
+        adict = {}
+
+        for x, y in candidates:
+            adict[(x, y)] = self.return_adjacent_symbol_numbers(
+                x, y, self.candidate_numbers
+            )
+        print(adict)
         digit_chars = []
 
         for x, y in candidates:
-            digit_chars.append(self.extract_digits_around_symbol(x, y))
+            digit_chars.append(self.extract_digits(x, y))
 
         return digit_chars
         # joined_digits = [int("".join(char_list)) for char_list in digit_chars]
@@ -252,7 +290,7 @@ class GridParser(BaseModel):
         # ]
         # return filtered_numbers
 
-    def extract_symbols_
+
 if __name__ == "__main__":
     data = read_data("test3")
 
