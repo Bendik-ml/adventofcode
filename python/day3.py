@@ -1,5 +1,4 @@
 import re
-from calendar import c
 from curses.ascii import isdigit
 
 from pydantic import BaseModel
@@ -92,7 +91,17 @@ class GridParser(BaseModel):
             if self.has_adjecent_symbol(x, y, self.candidate_symbols):
                 candidate_digits.append((x, y))
 
+        digits = retrieve_digits(candidate_digits)
         return candidate_digits
+
+    def retrieve_digits(self, candidate_digits: list[tuple[int, int]]) -> list[int]:
+        """Retrieves all adjacent digits vertically, horizontally or diagonally from list of x,y coordinates."""
+        digit_locations = []
+        digits = []
+        for x, y in candidate_digits:
+            digit_locations.append(self.extract_digits(x, y))
+
+        return digits
 
     def find_numbers_adjacent_to_symbol(self) -> bool:
         """Finds whether a given x, y coordinate from digit_indices has an adjecent symbol
@@ -186,6 +195,22 @@ class GridParser(BaseModel):
 
         return False if not return_location else locs
 
+    def retrieve_vertical(
+        self, x: int, y: int, search_list: list[str]
+    ) -> list[tuple[int, int]]:
+        """Retrieves all adjacent digits vertically, horizontally or diagonally from list of x,y coordinates."""
+        locs = []
+        # Check vertically
+        if x + 1 < len(self.grid):
+            if self.grid[x + 1][y] in search_list:
+                locs.append((x + 1, y))
+
+        if x - 1 >= 0:
+            if self.grid[x - 1][y] in search_list:
+                locs.append((x - 1, y))
+
+        return locs
+
     def check_horizontal(
         self, x: int, y: int, search_list: list[str], return_location: bool
     ) -> bool | tuple[int, int]:
@@ -209,6 +234,22 @@ class GridParser(BaseModel):
                 return True
 
         return False
+
+    def retrieve_horizontal(
+        self, x: int, y: int, search_list: list[str]
+    ) -> list[tuple[int, int]]:
+        """Retrieves all adjacent digits vertically, horizontally or diagonally from list of x,y coordinates."""
+        locs = []
+        # Check horizontally
+        if y + 1 < len(self.grid[x]):
+            if self.grid[x][y + 1] in search_list:
+                locs.append((x, y + 1))
+
+        if y - 1 >= 0:
+            if self.grid[x][y - 1] in search_list:
+                locs.append((x, y - 1))
+
+        return locs
 
     def check_diagonal(
         self, x: int, y: int, search_list: list[str], return_location: bool
@@ -241,6 +282,30 @@ class GridParser(BaseModel):
                 return True
 
         return False
+
+    def retrieve_diagonal(
+        self, x: int, y: int, search_list: list[str]
+    ) -> list[tuple[int, int]]:
+        """Retrieves all adjacent digits vertically, horizontally or diagonally from list of x,y coordinates."""
+        locs = []
+        # Check diagonally
+        if x + 1 < len(self.grid) and y + 1 < len(self.grid[x]):
+            if self.grid[x + 1][y + 1] in search_list:
+                locs.append((x + 1, y + 1))
+
+        if x + 1 < len(self.grid) and y - 1 >= 0:
+            if self.grid[x + 1][y - 1] in search_list:
+                locs.append((x + 1, y - 1))
+
+        if x - 1 >= 0 and y + 1 < len(self.grid[x]):
+            if self.grid[x - 1][y + 1] in search_list:
+                locs.append((x - 1, y + 1))
+
+        if x - 1 >= 0 and y - 1 >= 0:
+            if self.grid[x - 1][y - 1] in search_list:
+                locs.append((x - 1, y - 1))
+
+        return locs
 
     @property
     def digits(self) -> list[int]:
