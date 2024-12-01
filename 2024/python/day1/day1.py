@@ -24,7 +24,6 @@ def main():
     sc = calculate_similarity_score(x_sorted, y_sorted)
     print(sum(distance))
     print(sc)
-    # print(np.array(sorted(x)))
 
 
 def calculate_similarity_score(x, y):
