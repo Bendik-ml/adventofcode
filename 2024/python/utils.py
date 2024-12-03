@@ -1,8 +1,11 @@
 import os
-from typing import List, Tuple
+from typing import List
 
 
-def read_input(day: int) -> Tuple[int, List[int]]:
-    file_path = os.path.join(os.path.dirname(__file__), "..", "data", f"day{day}.txt")
+def read_input(day: int, test: bool = False) -> List[str]:
+    suffix = "_test" if test else ""
+    file_path = os.path.join(
+        os.path.dirname(__file__), "..", "data", f"day{str(day)+suffix}.txt"
+    )
     with open(file_path, "r") as file:
-        return [line.strip() for line in file]
+        return file.read()
