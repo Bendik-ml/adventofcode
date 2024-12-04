@@ -8,8 +8,17 @@ from utils import read_input
 
 
 def main():
-    data = read_input(1)
+    data = read_input(4)
+    data = pad_list(data)
     print(data)
+
+
+def pad_list(data: list):
+    return (
+        ["." * (len(data[0]) + 8)] * 4
+        + ["." * 4 + line + "." * 4 for line in data]
+        + ["." * (len(data[0]) + 8)] * 4
+    )
 
 
 if __name__ == "__main__":

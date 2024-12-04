@@ -16,8 +16,27 @@ def main():
 
 def parse_data(data: str):
     pattern = r"mul\(\d{1,3},\d{1,3}\)"
-    matches = re.findall(pattern, data)
-    totals = calculate_multiplications(matches)
+
+    candidates = []
+
+    for match in re.finditer(pattern, data):
+        if should_include(data, match.start()):
+            candidates.append(match.group())
+
+    total = calculate_multiplications(candidates)
+
+
+def should_include(data: str, start: int):
+    preceding_text = data[:start]
+
+    candidate_mentions = list(re.finditer(r"(?:do|don\'t)\(\)", preceding_text))
+
+    if not candidate_mentions:
+        return True
+
+    last_match = candidate_mentions[-1].group()
+
+    return last_match == "do()"
 
 
 def calculate_multiplications(matches: list):
